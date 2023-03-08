@@ -17,6 +17,8 @@ header {
 
 header,
 form {
+  margin-left: 50px;
+  padding-left: 10px;
   min-height: 20vh;
   display: flex;
   justify-content: center;
