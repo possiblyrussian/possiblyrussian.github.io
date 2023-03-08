@@ -1,57 +1,131 @@
-'use strict';
+const todoInput = document.querySelector(".todo-input");
+const todoButton = document.querySelector(".todo-button");
+const todoList = document.querySelector(".todo-list");
+const filterOption = document.querySelector(".filter-todo");
 
-let secretNumber = Math.trunc(Math.random() * 20) + 1;
-let score = 20;
-let highScore = 0;
+document.addEventListener("DOMContentLoaded", getLocalTodos);
+todoButton.addEventListener("click", addTodo);
+todoList.addEventListener("click", deleteCheck);
+filterOption.addEventListener("change", filterTodo);
 
-document.querySelector('.check').addEventListener('click', function () {
-  const guess = Number(document.querySelector('.guess').value);
-  console.log(guess, typeof guess);
+function addTodo(event) {
+  event.preventDefault();
+  const todoDiv = document.createElement("div");
+  todoDiv.classList.add("todo");
+  const newTodo = document.createElement("li");
+  newTodo.innerText = todoInput.value;
+  newTodo.classList.add("todo-item");
+  todoDiv.appendChild(newTodo);
+  //ADDING TO LOCAL STORAGE
+  saveLocalTodos(todoInput.value);
 
-  if (!guess) {
-    document.querySelector('.message').textContent = 'Please Enter a Number!';
+  const completedButton = document.createElement("button");
+  completedButton.innerHTML = '<i class="fas fa-check-circle"></li>';
+  completedButton.classList.add("complete-btn");
+  todoDiv.appendChild(completedButton);
+
+  const trashButton = document.createElement("button");
+  trashButton.innerHTML = '<i class="fas fa-trash"></li>';
+  trashButton.classList.add("trash-btn");
+  todoDiv.appendChild(trashButton);
+
+  todoList.appendChild(todoDiv);
+  todoInput.value = "";
+}
+
+function deleteCheck(e) {
+  const item = e.target;
+
+  if (item.classList[0] === "trash-btn") {
+    const todo = item.parentElement;
+    todo.classList.add("slide");
+
+    removeLocalTodos(todo);
+    todo.addEventListener("transitionend", function () {
+      todo.remove();
+    });
   }
-  //Guess is Right
-  else if (guess === secretNumber) {
-    document.querySelector(
-      '.message'
-    ).textContent = `You are CORRECT!! your score is ${score}`;
-    document.querySelector('.number').textContent = secretNumber;
-    document.querySelector('body').style.backgroundColor = '#60b347';
-    document.querySelector('.number').style.width = '30rem';
 
-    if (score > highScore) {
-      highScore = score;
-      document.querySelector('.highscore').textContent = highScore;
+  if (item.classList[0] === "complete-btn") {
+    const todo = item.parentElement;
+    todo.classList.toggle("completed");
+  }
+}
+
+function filterTodo(e) {
+  const todos = todolist.childNodes;
+  todos.forEach(function (todo) {
+    switch (e.target.value) {
+      case "all":
+        todo.style.display = "flex";
+        break;
+      case "completed":
+        if (todo.classList.contains("completed")) {
+          todo.style.display = "flex";
+        } else {
+          todo.style.display = "none";
+        }
+        break;
+      case "incomplete":
+        if (!todo.classList.contains("completed")) {
+          todo.style.display = "flex";
+        } else {
+          todo.style.display = "none";
+        }
+        break;
     }
-  }
-  //Guess is High
-  else if (guess > secretNumber) {
-    document.querySelector('.message').textContent = 'You Guess is too HIGH';
-    score--;
-    document.querySelector('.score').textContent = score;
+  });
+}
 
-    //Guess is Low
-  } else if (guess < secretNumber) {
-    document.querySelector('.message').textContent = 'You Guess is too LOW';
-    score--;
-    document.querySelector('.score').textContent = score;
+function saveLocalTodos(todo) {
+  let todos;
+  if (localStorage.getItem("todos") === null) {
+    todos = [];
+  } else {
+    todos = JSON.parse(localStorage.getItem("todos"));
+  }
+  todos.push(todo);
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
+
+function getLocalTodos() {
+  let todos;
+  if (localStorage.getItem("todos") === null) {
+    todos = [];
+  } else {
+    todos = JSON.parse(localStorage.getItem("todos"));
+  }
+  todos.forEach(function (todo) {
+    const todoDiv = document.createElement("div");
+    todoDiv.classList.add("todo");
+    const newTodo = document.createElement("li");
+    newTodo.innerText = todo;
+    newTodo.classList.add("todo-item");
+    todoDiv.appendChild(newTodo);
+
+    const completedButton = document.createElement("button");
+    completedButton.innerHTML = '<i class="fas fa-check-circle"></li>';
+    completedButton.classList.add("complete-btn");
+    todoDiv.appendChild(completedButton);
+
+    const trashButton = document.createElement("button");
+    trashButton.innerHTML = '<i class="fas fa-trash"></li>';
+    trashButton.classList.add("trash-btn");
+    todoDiv.appendChild(trashButton);
+
+    todoList.appendChild(todoDiv);
+  });
+}
+
+function removeLocalTodos(todo) {
+  let todos;
+  if (localStorage.getItem("todos") === null) {
+    todos = [];
+  } else {
+    todos = JSON.parse(localStorage.getItem("todos"));
   }
 
-  if (score <= 0) {
-    document.querySelector('.message').textContent =
-      'Man You really suck at this! You Lose!!';
-  }
-});
-
-document.querySelector('.again').addEventListener('click', function () {
-  score = 20;
-  document.querySelector('.score').textContent = score;
-  secretNumber = Math.trunc(Math.random() * 20) + 1;
-  document.querySelector('.message').textContent = 'Please Enter a Number!';
-  document.querySelector('.number').textContent = '?';
-  document.querySelector('.guess').value = 0;
-  document.querySelector('body').style.backgroundColor = '#222';
-  document.querySelector('.number').style.width = '15rem';
-  document.querySelector('.guess').value = 0;
-});
+  const todoIndex = todo.children[0].innerText;
+  todos.splice(todos.indexOf(todoIndex), 1);
+  localStorage.setItem("todos", JSON.stringify(todos));
+}
