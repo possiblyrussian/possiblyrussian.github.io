@@ -53,7 +53,7 @@ function deleteCheck(e) {
 }
 
 function filterTodo(e) {
-  const todos = todolist.childNodes;
+  const todos = todoList.childNodes;
   todos.forEach(function (todo) {
     switch (e.target.value) {
       case "all":
